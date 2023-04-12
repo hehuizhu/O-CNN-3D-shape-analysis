@@ -13,12 +13,12 @@ class OctreeConvTest(unittest.TestCase):
     height = 152
     num_outputs = 5
     octree = ocnn.octree_batch(ocnn.octree_samples(['octree_1', 'octree_2']))
-    data = np.random.uniform(-1.0, 1.0, [1, channel, height, 1]).astype('float32') # 
-	
-	#octree:  tensor([95, 79, 67,  ...,  0,  0,  0], dtype=torch.uint8)   <class 'torch.Tensor'>   torch.Size([35624])   octree min-max:  tensor(0, dtype=torch.uint8) tensor(255, dtype=torch.uint8)   256 
+    data = np.random.uniform(-1.0, 1.0, [1, channel, height, 1]).astype('float32')
+    print('data: ',data.shape)
     print('octree: ',octree,' ',type(octree),' ',octree.shape,' ','octree min-max: ',torch.min(octree),torch.max(octree),' ',len(torch.unique(octree)),'\n\n')
-	feature = ocnn.octree_property(octrees, 'feature', 8)
-    print(feature.size(1))
+    feature=ocnn.octree_property(octree,'feature',depth)
+    print('feature: ',feature.shape,'\n')
+
     # forward
     conv1 = ocnn.OctreeConv(depth, channel, num_outputs, kernel_size, stride)
     conv2 = ocnn.OctreeConvFast(depth, channel, num_outputs, kernel_size, stride)
@@ -30,14 +30,14 @@ class OctreeConvTest(unittest.TestCase):
       conv2.weights.data.copy_(conv1.weights.data)
       conv3.weights.data.copy_(conv1.weights.data)
       conv4.weights.data.copy_(conv1.weights.data)
-    print('conv1.weights: ',conv1.weights.data,' ',conv1.weights.data.shape,'\n\n')   #torch.Size([5, 81]) 
-
+    print('conv1.weights: ',conv1.weights.data,' ',conv1.weights.data.shape,'\n\n')
+	
     # forward - compare OctreeConv and OctreeConvFast
     octree = octree.cuda()
     conv1.cuda()
     data1 = torch.from_numpy(data).cuda().requires_grad_()
     out1 = conv1(data1, octree)
-    print('out1: ',out1.shape)  #torch.Size([1, 5, 88, 1])
+    print('out1: ',out1.shape)
 
     conv2.cuda()
     data2 = torch.from_numpy(data).cuda().requires_grad_()
@@ -93,6 +93,7 @@ class OctreeConvTest(unittest.TestCase):
 
     for i in range(len(stride)):
       for j in range(len(kernel_size)):
+        print('stride: ',stride[i],' kernel_size: ',kernel_size[j],'\n\n')
         self.forward_and_backward(kernel_size[j], stride[i])
 
 

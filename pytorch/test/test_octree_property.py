@@ -8,21 +8,20 @@ import numpy as np
 class OctreePropertyTest(unittest.TestCase):
   def octree_property(self, on_cuda=True):
     batch_size = 2
-	# octree:  tensor([95, 79, 67,  ...,  0,  0,  0], dtype=torch.uint8) torch.Size([9448])
     octree = ocnn.octree_batch(ocnn.octree_samples(['octree_1'] * batch_size))
+    print('octree: ',octree,'\n',octree.shape)
     if on_cuda:
       octree = octree.cuda()
 
     # test index
-	# out_index:  tensor([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1], device='cuda:0',
-    #  dtype=torch.int32) torch.Size([16])
     out = ocnn.octree_property(octree, 'index', 5)
+    print('out_index: ',out,'\n',out.shape)
     out_gt = np.array([0] * 8 + [1] * 8)
     self.assertTrue(np.array_equal(out.cpu().numpy(), out_gt))
 
     # test feature
-	# torch.Size([1, 3, 16, 1])
     out = ocnn.octree_property(octree, 'feature', 5)
+    print('out_feature: ',out,'\n',out.shape)
     out_gt = np.zeros([3, 16], dtype=np.float32)
     out_gt[:, 0] = 3.0 ** 0.5 / 3.0
     out_gt[:, 8] = 3.0 ** 0.5 / 3.0
